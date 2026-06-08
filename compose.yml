@@ -1,0 +1,17 @@
+services:
+  fadhil-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fadhilsaid/fashion-backend:latest
+    container_name: fadhil-backend
+    env_file:
+      - .env
+    ports:
+      - "8089:8082"
+    volumes:
+      - fadhil-backend-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  fadhil-backend-data:

@@ -1,0 +1,6 @@
+node_modules
+.idea
+.env.local
+npm-debug.log*
+data/*.json
+.DS_Store

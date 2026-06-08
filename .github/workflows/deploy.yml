@@ -74,5 +74,16 @@ jobs:
             docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
             docker pull "$IMAGE_NAME"
             docker compose -f "$COMPOSE_FILE" up -d --force-recreate
-            docker compose -f "$COMPOSE_FILE" logs --tail=50
-            curl -fsS http://localhost:8089/api/health
+            echo "Waiting for backend health check..."
+            for attempt in $(seq 1 30); do
+              if curl -fsS http://localhost:8089/api/health; then
+                echo "Backend is healthy."
+                docker compose -f "$COMPOSE_FILE" logs --tail=50
+                exit 0
+              fi
+              echo "Backend not ready yet. Attempt $attempt/30"
+              sleep 3
+            done
+            docker compose -f "$COMPOSE_FILE" ps
+            docker compose -f "$COMPOSE_FILE" logs --tail=100
+            exit 1

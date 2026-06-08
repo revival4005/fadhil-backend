@@ -10,6 +10,7 @@ env:
   IMAGE_NAME: fadhilsaid/fashion-backend:latest
   SERVER_HOST: 5.189.190.132
   SERVER_COMPOSE_FILE: /home/revival/fadhil-backend/compose.yml
+  API_BASE_URL: http://5.189.190.132:8089/api
   PORT: 8082
   CORS_ORIGIN: http://localhost:3000,http://localhost:3002,http://5.189.190.132:3002
 
@@ -48,6 +49,7 @@ jobs:
             mkdir -p "$APP_DIR"
             cd "$APP_DIR"
             cat > .env <<'EOF'
+            API_BASE_URL=${{ env.API_BASE_URL }}
             PORT=${{ env.PORT }}
             CORS_ORIGIN=${{ env.CORS_ORIGIN }}
             EOF

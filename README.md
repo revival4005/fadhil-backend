@@ -21,6 +21,17 @@ Docker/server API base URL:
 http://5.189.190.132:8089/api
 ```
 
+The `.env` file keeps the same simple style as the frontend:
+
+```env
+# local
+API_BASE_URL="http://localhost:8082/api"
+PORT=8082
+
+# uat
+#API_BASE_URL="http://5.189.190.132:8089/api"
+```
+
 ## Main endpoints
 
 ```text

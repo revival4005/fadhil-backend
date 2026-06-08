@@ -1,0 +1,74 @@
+name: Build And Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: fadhilsaid/fashion-backend:latest
+  SERVER_HOST: 5.189.190.132
+  SERVER_COMPOSE_FILE: /home/revival/fadhil-backend/compose.yml
+  PORT: 8082
+  CORS_ORIGIN: http://localhost:3000,http://localhost:3002,http://5.189.190.132:3002
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image
+        run: docker build -t "$IMAGE_NAME" .
+
+      - name: Push Docker image
+        run: docker push "$IMAGE_NAME"
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST || env.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e
+            IMAGE_NAME="${{ env.IMAGE_NAME }}"
+            COMPOSE_FILE="${{ env.SERVER_COMPOSE_FILE }}"
+            APP_DIR="$(dirname "$COMPOSE_FILE")"
+            echo "Deploying $IMAGE_NAME with $COMPOSE_FILE"
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+            cat > .env <<'EOF'
+            PORT=${{ env.PORT }}
+            CORS_ORIGIN=${{ env.CORS_ORIGIN }}
+            EOF
+            cat > compose.yml <<EOF
+            services:
+              fadhil-backend:
+                image: $IMAGE_NAME
+                container_name: fadhil-backend
+                env_file:
+                  - .env
+                ports:
+                  - "8089:8082"
+                volumes:
+                  - fadhil-backend-data:/app/data
+                restart: unless-stopped
+
+            volumes:
+              fadhil-backend-data:
+            EOF
+            docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+            docker pull "$IMAGE_NAME"
+            docker compose -f "$COMPOSE_FILE" up -d --force-recreate
+            docker compose -f "$COMPOSE_FILE" logs --tail=50
+            curl -fsS http://localhost:8089/api/health

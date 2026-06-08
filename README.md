@@ -1,12 +1,11 @@
 # FK Collection Backend
 
-Simple Express API for the FK Collection clothing store.
+Spring Boot API for the FK Collection clothing store.
 
 ## Run locally
 
 ```bash
-npm install
-npm run dev
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 Local API base URL:
@@ -21,15 +20,26 @@ Docker/server API base URL:
 http://5.189.190.132:8089/api
 ```
 
+Spring Boot uses application properties:
+
+```text
+src/main/resources/application-dev.properties
+src/main/resources/application-uat.properties
+```
+
 The `.env` file keeps the same simple style as the frontend:
 
 ```env
 # local
 API_BASE_URL="http://localhost:8082/api"
 PORT=8082
+SPRING_PROFILES_ACTIVE=dev
+CORS_ORIGIN=http://localhost:3000,http://localhost:3002
 
 # uat
 #API_BASE_URL="http://5.189.190.132:8089/api"
+#SPRING_PROFILES_ACTIVE=uat
+#CORS_ORIGIN=http://5.189.190.132:3002
 ```
 
 ## Main endpoints
